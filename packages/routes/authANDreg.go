@@ -15,6 +15,7 @@ import (
 var (
 	tpl   *template.Template
 	store *sessions.CookieStore
+	db    *sqlx.DB
 )
 
 func init() {
@@ -55,6 +56,7 @@ func Auth(db *sqlx.DB) http.Handler {
 		password := r.FormValue("password")
 
 		var user User
+		// get user by username from db
 		err := db.Get(&user, "SELECT UserID, Hash FROM bcrypt WHERE Username = ?", username)
 		if err != nil {
 			fmt.Print(err)
@@ -101,6 +103,7 @@ func Reg(db *sqlx.DB) http.Handler {
 			http.Error(w, "Failed to hash password", http.StatusInternalServerError)
 			return
 		}
+		//add new user
 		_, err = db.Exec("INSERT INTO bcrypt (Username, Hash) VALUES (?, ?)", username, hashedPassword)
 		if err != nil {
 			http.Error(w, "This username is already used.", http.StatusInternalServerError)

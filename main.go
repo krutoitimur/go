@@ -1,7 +1,9 @@
 package main
 
 import (
+	"beastmode/packages/db"
 	"beastmode/packages/routes"
+
 	"fmt"
 	"net/http"
 
@@ -12,11 +14,10 @@ import (
 
 func main() {
 	//database connect
+	db, err := db.NewDatabase()
 
-	db, err := sqlx.Connect("mysql", "root:@/danil")
 	if err != nil {
-		fmt.Println("Error opening database:", err)
-		return
+		fmt.Println("Error in connection database:", err)
 	}
 
 	defer func(db *sqlx.DB) {
@@ -24,14 +25,13 @@ func main() {
 		if err != nil {
 			fmt.Println("Error closing database:", err)
 		}
-	}(db)
+	}(db.GetDB())
 
 	//routes
 	r := mux.NewRouter()
 
-	// Определите маршруты здесь
-	r.PathPrefix("/auth").Handler(routes.Auth(db))
-	r.PathPrefix("/registration").Handler(routes.Reg(db))
+	r.PathPrefix("/auth").Handler(routes.Auth(db.GetDB()))
+	r.PathPrefix("/registration").Handler(routes.Reg(db.GetDB()))
 	//serve
 	fmt.Print("Server is running on port :8080")
 	http.ListenAndServe(":8080", r)
