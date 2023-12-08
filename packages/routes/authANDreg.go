@@ -98,24 +98,31 @@ func Reg(db *sqlx.DB) http.Handler {
 		password := r.FormValue("password")
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		if err != nil {
-			http.Error(w, "Failed to hash password", http.StatusInternalServerError)
+			utils.SendJSONResponse(w, http.StatusInternalServerError, "Failed to hash password")
 			return
 		}
 
-		//check if username is exists
+		// check if username exists
 		var count int
 		err = db.Get(&count, "SELECT COUNT(*) FROM bcrypt WHERE Username = ?", username)
-
-		if err != nil || count > 0 {
-			http.Error(w, "This username is already exists", http.StatusInternalServerError)
+		if err != nil {
+			utils.SendJSONResponse(w, http.StatusInternalServerError, "Internal Server Error")
 			return
 		}
-		//add new user
+
+		if count > 0 {
+			utils.SendJSONResponse(w, http.StatusBadRequest, "This username is already exists!")
+			return
+		}
+
+		// add new user
 		_, err = db.Exec("INSERT INTO bcrypt (Username, Hash) VALUES (?, ?)", username, hashedPassword)
 		if err != nil {
-			http.Error(w, "Sign up went wrong..", http.StatusInternalServerError)
+			utils.SendJSONResponse(w, http.StatusInternalServerError, "Sign up went wrong..")
 			return
 		}
+
+		utils.SendJSONResponse(w, http.StatusOK, "Registration successful!")
 
 	}).Methods("POST")
 

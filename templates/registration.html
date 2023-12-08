@@ -59,7 +59,7 @@
 
 <div class="form-container">
   <h2>Registration</h2>
-  <form action="/registration" method="POST" onsubmit="return validateForm()">
+  <form name= "registrationForm" action="/registration" method="POST" onsubmit="return validateForm()">
 
 
     <input type="text" name="username" id="username" placeholder="Username" required>
@@ -142,6 +142,32 @@
     return true;
   }
 </script>
+<!-- In your HTML template -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+    $.ajax({
+    type: "POST",
+    url: "/registration",
+    data: formData,
+    success: function (response) {
+        console.log(response); // Log the response to the console
+        // Handle success response
+        if (response.status === 200) {
+            alert(response.message);
+        } else {
+            alert("Error: " + response.message);
+        }
+    },
+    error: function () {
+        alert("Error occurred while processing the request.");
+    }
+});
+
+
+
+</script>
+
 
 </body>
 </html>
