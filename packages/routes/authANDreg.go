@@ -1,9 +1,9 @@
 package routes
 
 import (
+	"beastmode/packages/utils"
+
 	"fmt"
-	"html/template"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -13,13 +13,11 @@ import (
 )
 
 var (
-	tpl   *template.Template
 	store *sessions.CookieStore
 )
 
 func init() {
 	store = sessions.NewCookieStore([]byte("dp%sco2%sa[2mni12zpmy%%vqf_w!enk"))
-	tpl, _ = template.ParseGlob("templates/*.html")
 }
 
 type User struct {
@@ -35,7 +33,7 @@ func Auth(db *sqlx.DB) http.Handler {
 		session, _ := store.Get(r, "session")
 		userID, ok := session.Values["userID"].(int)
 		if !ok || userID == 0 {
-			renderTemplate(w, "auth.html", nil)
+			utils.RenderTemplate(w, "auth.html", nil)
 			return
 		}
 
@@ -56,6 +54,7 @@ func Auth(db *sqlx.DB) http.Handler {
 
 		var user User
 		// get user by username from db
+
 		err := db.Get(&user, "SELECT UserID, Hash FROM bcrypt WHERE Username = ?", username)
 		if err != nil {
 			fmt.Print(err)
@@ -88,7 +87,7 @@ func Reg(db *sqlx.DB) http.Handler {
 
 	r.HandleFunc("/registration", func(w http.ResponseWriter, r *http.Request) {
 
-		renderTemplate(w, "registration.html", nil)
+		utils.RenderTemplate(w, "registration.html", nil)
 
 	}).Methods("GET")
 
@@ -112,12 +111,4 @@ func Reg(db *sqlx.DB) http.Handler {
 	}).Methods("POST")
 
 	return r
-}
-
-func renderTemplate(w http.ResponseWriter, templateName string, data interface{}) {
-	err := tpl.ExecuteTemplate(w, templateName, data)
-	if err != nil {
-		http.Error(w, "Failed to render template: "+err.Error(), http.StatusInternalServerError)
-		log.Printf("Error rendering template: %s", err)
-	}
 }
