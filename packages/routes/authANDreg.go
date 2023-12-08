@@ -15,7 +15,6 @@ import (
 var (
 	tpl   *template.Template
 	store *sessions.CookieStore
-	db    *sqlx.DB
 )
 
 func init() {
